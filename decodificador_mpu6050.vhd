@@ -5,7 +5,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity decodificador_mpu6050 is
-    Port ( reloj         : in  STD_LOGIC;
+    PORT ( reloj         : in  STD_LOGIC;
            byte_datos    : in  STD_LOGIC_VECTOR (7 downto 0);
            byte_datos_de : in  STD_LOGIC;
 

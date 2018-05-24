@@ -5,7 +5,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity PWM is
-    Port ( reloj : in  STD_LOGIC;
+    PORT ( reloj : in  STD_LOGIC;
            valor : in  STD_LOGIC_VECTOR(7 DOWNTO 0);
 
            PWM   : out STD_LOGIC );
@@ -21,7 +21,7 @@ begin
     begin
         if (reloj'event and reloj='1') then
             -- Salida a 1 durante `valor` ciclos
-            if unsigned(contador) < unsigned(valor) OR unsigned(contador) = unsigned(valor)  then
+            if unsigned(contador) < unsigned(valor) or unsigned(contador) = unsigned(valor)  then
                 PWM <= '1';
             else
                 PWM <= '0';
