@@ -5,8 +5,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity control_motores is
-    PORT ( reloj        : in STD_LOGIC;
-           pos_de       : in STD_LOGIC;
+    PORT ( pos_de       : in STD_LOGIC;
            pos_x        : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
            pos_y        : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
           
@@ -19,14 +18,34 @@ entity control_motores is
 
 end control_motores;
 
-architecture Comportamiento of decodificador_mpu6050 is
-
+architecture Comportamiento of control_motores is
+    signal velocidad_A_absoluta : INTEGER := 0;
+    signal velocidad_B_absoluta : INTEGER := 0;
+    constant DEG_180            : STD_LOGIC_VECTOR (14 downto 0) := (others => '1');
+    constant DEG_45             : INTEGER := to_integer(unsigned(DEG_180)) / 4;
 begin
+    velocidad_A <= STD_LOGIC_VECTOR(to_unsigned(velocidad_A_absoluta, velocidad_A'length));
+    velocidad_B <= STD_LOGIC_VECTOR(to_unsigned(velocidad_B_absoluta, velocidad_B'length));
 
-    process(reloj)
+    process(pos_de)
     begin
-        if (reloj'event and reloj='1') then
-            NULL;
+        if (pos_de'event and pos_de='1') then
+            L298N_IN1 <= pos_x(15);
+            L298N_IN2 <= NOT pos_x(15);
+
+            L298N_IN3 <= pos_x(15);
+            L298N_IN4 <= NOT pos_x(15);
+
+            
+
+            if abs(signed(pos_x)) > DEG_45 then
+                velocidad_A <= (others => '1');
+                velocidad_B <= (others => '1');
+            else
+                velocidad_A_absoluta <= to_integer(abs(signed(pos_x))) * 255 / DEG_45;
+                velocidad_B_absoluta <= velocidad_A_absoluta;
+            end if;
+
         end if;
     end process;
 

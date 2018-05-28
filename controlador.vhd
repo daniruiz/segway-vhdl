@@ -47,17 +47,16 @@ architecture Comportamiento of controlador is
     end component;
 
     component control_motores is
-        Port (reloj          : in STD_LOGIC;
-              pos_de         : in STD_LOGIC;
-              pos_x          : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
-              pos_y          : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
+        Port ( pos_de         : in STD_LOGIC;
+               pos_x          : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
+               pos_y          : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
           
-              velocidad_A    : out STD_LOGIC_VECTOR (7 downto 0);
-              L298N_IN1      : out STD_LOGIC; -- Sentido motor A _0
-              L298N_IN2      : out STD_LOGIC; -- Sentido motor A _1
-              L298N_IN3      : out STD_LOGIC; -- Sentido motor B _0
-              L298N_IN4      : out STD_LOGIC; -- Sentido motor B _1
-              velocidad_B    : out STD_LOGIC_VECTOR (7 downto 0) );
+               velocidad_A    : out STD_LOGIC_VECTOR (7 downto 0);
+               L298N_IN1      : out STD_LOGIC; -- Sentido motor A _0
+               L298N_IN2      : out STD_LOGIC; -- Sentido motor A _1
+               L298N_IN3      : out STD_LOGIC; -- Sentido motor B _0
+               L298N_IN4      : out STD_LOGIC; -- Sentido motor B _1
+               velocidad_B    : out STD_LOGIC_VECTOR (7 downto 0) );
     end component;
 
     component PWM is
@@ -119,7 +118,6 @@ begin
             pos_de        => pos_de );
 
     i_control_motores: control_motores port map (
-            reloj         => reloj,
             pos_de        => pos_de,
             pos_x         => pos_x,
             pos_y         => pos_y,
