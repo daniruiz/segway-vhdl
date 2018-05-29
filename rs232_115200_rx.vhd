@@ -37,18 +37,19 @@ begin
                 end if;
             else
                 -- Recoge los bits a 115200bps (espera inicial de 1.5bit veces para el bit de inicio)
-                case contador is 
-                    when to_unsigned(medio_bit + 1 * bit_completo, contador'length) => byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
-                    when to_unsigned(medio_bit + 2 * bit_completo, contador'length) => byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
-                    when to_unsigned(medio_bit + 3 * bit_completo, contador'length) => byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
-                    when to_unsigned(medio_bit + 4 * bit_completo, contador'length) => byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
-                    when to_unsigned(medio_bit + 5 * bit_completo, contador'length) => byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
-                    when to_unsigned(medio_bit + 6 * bit_completo, contador'length) => byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
-                    when to_unsigned(medio_bit + 7 * bit_completo, contador'length) => byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
-                    when to_unsigned(medio_bit + 8 * bit_completo, contador'length) => byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
-                    when to_unsigned(medio_bit + 9 * bit_completo, contador'length) => byte_datos_de <= entrada_serie_seguro; -- Bit de finalización a 1.
-                    when others => NULL;
-                end case;
+                if      contador = to_unsigned(medio_bit + 1 * bit_completo, contador'length) or
+                        contador = to_unsigned(medio_bit + 2 * bit_completo, contador'length) or
+                        contador = to_unsigned(medio_bit + 3 * bit_completo, contador'length) or
+                        contador = to_unsigned(medio_bit + 4 * bit_completo, contador'length) or
+                        contador = to_unsigned(medio_bit + 5 * bit_completo, contador'length) or
+                        contador = to_unsigned(medio_bit + 6 * bit_completo, contador'length) or
+                        contador = to_unsigned(medio_bit + 7 * bit_completo, contador'length) or
+                        contador = to_unsigned(medio_bit + 8 * bit_completo, contador'length) then
+                    byte_datos_sr <= entrada_serie_seguro & byte_datos_sr(7 downto 1);
+                    
+                elsif   contador = to_unsigned(medio_bit + 9 * bit_completo, contador'length) then
+                    byte_datos_de <= entrada_serie_seguro;
+                end if;
                 
                 if contador = to_unsigned(medio_bit + 9 * bit_completo + 1, contador'length) then
                     if entrada_serie_seguro = '0' then

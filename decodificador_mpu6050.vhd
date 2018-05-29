@@ -48,27 +48,27 @@ begin
             rot_de <= '0';
             pos_de <= '0';
             if byte_datos_de = '1' then
-                -- Actualizaci髇 del checksum
+                -- Actualizaci贸n del checksum
                 chksum <= chksum + unsigned(byte_datos) - unsigned(c(0));
                 
                 -- Desplazamiento de los caracteres
                 c(0 to 8) <= c(1 to 9);
                 c(9)      <= byte_datos;
                 if c(0) = CABECERA_AC then
-                    -- Verificaci髇 errores
+                    -- Verificaci贸n errores
                     if chksum = unsigned(byte_datos) then
                         case c(1) is
-                            when CABECERA_AC => -- Aceleraci髇
+                            when CABECERA_AC => -- Aceleraci贸n
                                 ac_x     <= c(3) & c(2);
                                 ac_y     <= c(5) & c(4);
                                 ac_z     <= c(7) & c(6);
                                 ac_de    <= '1';
-                            when CABECERA_ROT => -- Rotaci髇
+                            when CABECERA_ROT => -- Rotaci贸n
                                 rot_x     <= c(3) & c(2);
                                 rot_y     <= c(5) & c(4);
                                 rot_z     <= c(7) & c(6);
                                 rot_de    <= '1';
-                            when CABECERA_POS => -- Posici髇
+                            when CABECERA_POS => -- Posici贸n
                                 pos_x     <= c(3) & c(2);
                                 pos_y     <= c(5) & c(4);
                                 pos_z     <= c(7) & c(6);

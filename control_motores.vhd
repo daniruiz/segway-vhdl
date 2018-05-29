@@ -6,7 +6,7 @@ use IEEE.NUMERIC_STD.ALL;
 
 entity control_motores is
     PORT ( pos_de       : in STD_LOGIC;
-           pos_x        : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
+           pos_x        : in STD_LOGIC_VECTOR (15 downto 0); -- InclinaciÃ³n
            pos_y        : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
           
            velocidad_A  : out STD_LOGIC_VECTOR (7 downto 0);

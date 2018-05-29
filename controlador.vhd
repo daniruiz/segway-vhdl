@@ -25,7 +25,7 @@ architecture Comportamiento of controlador is
                byte_datos_de : out STD_LOGIC );
     end component;
 
-    component mpu6050_decode is
+    component decodificador_mpu6050 is
         Port ( reloj         : in  STD_LOGIC;
                byte_datos    : in  STD_LOGIC_VECTOR (7 downto 0);
                byte_datos_de : in  STD_LOGIC;
@@ -48,7 +48,7 @@ architecture Comportamiento of controlador is
 
     component control_motores is
         Port ( pos_de         : in STD_LOGIC;
-               pos_x          : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
+               pos_x          : in STD_LOGIC_VECTOR (15 downto 0); -- InclinaciÃ³n
                pos_y          : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
           
                velocidad_A    : out STD_LOGIC_VECTOR (7 downto 0);
@@ -99,7 +99,7 @@ begin
             byte_datos    => byte_datos,
             byte_datos_de => byte_datos_de );
 
-    i_mpu6050_decode: mpu6050_decode port map (
+    i_mpu6050_decode: decodificador_mpu6050 port map (
             reloj         => reloj,
             byte_datos    => byte_datos,
             byte_datos_de => byte_datos_de,
