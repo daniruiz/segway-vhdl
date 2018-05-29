@@ -5,14 +5,15 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity controlador is
-    PORT ( mpu6050   : in   STD_LOGIC;
+    PORT ( reloj     : in  STD_LOGIC;
+           mpu6050   : in  STD_LOGIC;
 
-           L298N_ENA : out  STD_LOGIC;
-           L298N_IN1 : out  STD_LOGIC;
-           L298N_IN2 : out  STD_LOGIC;
-           L298N_IN3 : out  STD_LOGIC;
-           L298N_IN4 : out  STD_LOGIC;
-           L298N_ENB : out  STD_LOGIC );
+           L298N_ENA : out STD_LOGIC;
+           L298N_IN1 : out STD_LOGIC;
+           L298N_IN2 : out STD_LOGIC;
+           L298N_IN3 : out STD_LOGIC;
+           L298N_IN4 : out STD_LOGIC;
+           L298N_ENB : out STD_LOGIC );
 end controlador;
 
 architecture Comportamiento of controlador is
@@ -47,16 +48,16 @@ architecture Comportamiento of controlador is
     end component;
 
     component control_motores is
-        Port ( reloj          : in STD_LOGIC;
-               pos_x          : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
-               pos_y          : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
+        Port ( reloj         : in STD_LOGIC;
+               pos_x         : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
+               pos_y         : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
           
-               velocidad_A    : out STD_LOGIC_VECTOR (7 downto 0);
-               L298N_IN1      : out STD_LOGIC; -- Sentido motor A _0
-               L298N_IN2      : out STD_LOGIC; -- Sentido motor A _1
-               L298N_IN3      : out STD_LOGIC; -- Sentido motor B _0
-               L298N_IN4      : out STD_LOGIC; -- Sentido motor B _1
-               velocidad_B    : out STD_LOGIC_VECTOR (7 downto 0) );
+               velocidad_A   : out STD_LOGIC_VECTOR (7 downto 0);
+               L298N_IN1     : out STD_LOGIC; -- Sentido motor A _0
+               L298N_IN2     : out STD_LOGIC; -- Sentido motor A _1
+               L298N_IN3     : out STD_LOGIC; -- Sentido motor B _0
+               L298N_IN4     : out STD_LOGIC; -- Sentido motor B _1
+               velocidad_B   : out STD_LOGIC_VECTOR (7 downto 0) );
     end component;
 
     component PWM is
@@ -67,7 +68,6 @@ architecture Comportamiento of controlador is
     end component;
 
 
-    signal reloj         : STD_LOGIC;
 
     signal byte_datos    : STD_LOGIC_VECTOR (7 downto 0);
     signal byte_datos_de : STD_LOGIC;
@@ -140,13 +140,5 @@ begin
             valor         => velocidad_B,
 
             PWM           => L298N_ENB );
-
-    process
-    begin
-        reloj <= '0';
-        wait for 10 ns;
-        reloj <= '1';
-        wait for 10 ns;
-    end process;
 
 end Comportamiento;
