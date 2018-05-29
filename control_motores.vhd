@@ -24,8 +24,6 @@ architecture Comportamiento of control_motores is
     constant DEG_180            : STD_LOGIC_VECTOR (14 downto 0) := (others => '1');
     constant DEG_45             : INTEGER := to_integer(unsigned(DEG_180)) / 4;
 begin
-    velocidad_A <= STD_LOGIC_VECTOR(to_unsigned(velocidad_A_absoluta, velocidad_A'length));
-    velocidad_B <= STD_LOGIC_VECTOR(to_unsigned(velocidad_B_absoluta, velocidad_B'length));
 
     process(pos_de)
     begin
@@ -47,6 +45,10 @@ begin
             end if;
 
         end if;
+        
+        velocidad_A <= STD_LOGIC_VECTOR(to_unsigned(velocidad_A_absoluta, velocidad_A'length));
+        velocidad_B <= STD_LOGIC_VECTOR(to_unsigned(velocidad_B_absoluta, velocidad_B'length));
+    
     end process;
 
 end Comportamiento;

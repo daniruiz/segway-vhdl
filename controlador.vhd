@@ -47,7 +47,7 @@ architecture Comportamiento of controlador is
     end component;
 
     component control_motores is
-        Port ( pos_de         : in STD_LOGIC;
+        Port ( reloj          : in STD_LOGIC;
                pos_x          : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
                pos_y          : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
           
@@ -118,7 +118,7 @@ begin
             pos_de        => pos_de );
 
     i_control_motores: control_motores port map (
-            pos_de        => pos_de,
+            reloj         => pos_de,
             pos_x         => pos_x,
             pos_y         => pos_y,
           
