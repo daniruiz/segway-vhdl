@@ -5,7 +5,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity control_motores is
-    PORT ( pos_de       : in STD_LOGIC;
+    PORT ( reloj        : in STD_LOGIC;
            pos_x        : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
            pos_y        : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
           
@@ -25,9 +25,9 @@ architecture Comportamiento of control_motores is
     constant DEG_45             : INTEGER := to_integer(unsigned(DEG_180)) / 4;
 begin
 
-    process(pos_de)
+    process(reloj)
     begin
-        if (pos_de'event and pos_de='1') then
+        if (reloj'event and reloj='1') then
             L298N_IN1 <= pos_x(15);
             L298N_IN2 <= NOT pos_x(15);
 
