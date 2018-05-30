@@ -5,7 +5,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity control_motores is
-    PORT ( reloj        : in STD_LOGIC;
+    PORT ( reloj       : in STD_LOGIC;
            pos_x        : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
            pos_y        : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
           
@@ -24,17 +24,9 @@ architecture Comportamiento of control_motores is
     constant DEG_180            : STD_LOGIC_VECTOR (14 downto 0) := (others => '1');
     constant DEG_45             : INTEGER := to_integer(unsigned(DEG_180)) / 4;
 begin
-
     process(reloj)
     begin
         if (reloj'event and reloj='1') then
-            L298N_IN1 <= pos_x(15);
-            L298N_IN2 <= NOT pos_x(15);
-
-            L298N_IN3 <= pos_x(15);
-            L298N_IN4 <= NOT pos_x(15);
-
-            
 
             if abs(signed(pos_x)) > DEG_45 then
                 velocidad_A <= (others => '1');
@@ -43,12 +35,17 @@ begin
                 velocidad_A_absoluta <= to_integer(abs(signed(pos_x))) * 255 / DEG_45;
                 velocidad_B_absoluta <= velocidad_A_absoluta;
             end if;
+            
+            L298N_IN1 <= pos_x(15);
+            L298N_IN2 <= NOT pos_x(15);
+
+            L298N_IN3 <= pos_x(15);
+            L298N_IN4 <= NOT pos_x(15);
+            
+            velocidad_A <= STD_LOGIC_VECTOR(to_unsigned(velocidad_A_absoluta, velocidad_A'length));
+            velocidad_B <= STD_LOGIC_VECTOR(to_unsigned(velocidad_B_absoluta, velocidad_B'length));
 
         end if;
-        
-        velocidad_A <= STD_LOGIC_VECTOR(to_unsigned(velocidad_A_absoluta, velocidad_A'length));
-        velocidad_B <= STD_LOGIC_VECTOR(to_unsigned(velocidad_B_absoluta, velocidad_B'length));
-    
     end process;
 
 end Comportamiento;
