@@ -19,25 +19,25 @@ end controlador;
 architecture Comportamiento of controlador is
 
     component control_motores is
-        Port ( reloj         : in STD_LOGIC;
-               pos_x         : in STD_LOGIC_VECTOR (15 downto 0); -- Inclinación
-               pos_y         : in STD_LOGIC_VECTOR (15 downto 0); -- Giro
-          
-               velocidad_A   : out STD_LOGIC_VECTOR (7 downto 0);
-               L298N_IN1     : out STD_LOGIC; -- Sentido motor A _0
-               L298N_IN2     : out STD_LOGIC; -- Sentido motor A _1
-               L298N_IN3     : out STD_LOGIC; -- Sentido motor B _0
-               L298N_IN4     : out STD_LOGIC; -- Sentido motor B _1
-               velocidad_B   : out STD_LOGIC_VECTOR (7 downto 0) );
+        GENERIC  ( N_bits_datos   : INTEGER := 8 );
+        PORT     ( reloj          : in STD_LOGIC;
+                   pos_x          : in STD_LOGIC_VECTOR (N_bits_datos-1 downto 0); -- Inclinación
+                   pos_y          : in STD_LOGIC_VECTOR (N_bits_datos-1 downto 0); -- Giro
+    
+                   velocidad_A    : out STD_LOGIC_VECTOR (7 downto 0);
+                   L298N_IN1      : out STD_LOGIC; -- Sentido motor A _0
+                   L298N_IN2      : out STD_LOGIC; -- Sentido motor A _1
+                   L298N_IN3      : out STD_LOGIC; -- Sentido motor B _0
+                   L298N_IN4      : out STD_LOGIC; -- Sentido motor B _1
+                   velocidad_B    : out STD_LOGIC_VECTOR (7 downto 0) );
     end component;
 
     component PWM is
-        Port ( reloj         : in  STD_LOGIC;
-               valor         : in  STD_LOGIC_VECTOR(7 DOWNTO 0);
+        PORT    ( reloj           : in  STD_LOGIC;
+                  valor           : in  STD_LOGIC_VECTOR(7 DOWNTO 0);
 
-               PWM           : out STD_LOGIC );
+                  PWM             : out STD_LOGIC );
     end component;
-
 
 
     signal velocidad_A   : STD_LOGIC_VECTOR (7 downto 0);
@@ -45,7 +45,9 @@ architecture Comportamiento of controlador is
 
 begin
 
-    i_control_motores: control_motores port map (
+    i_control_motores: control_motores
+        generic map ( N_bits_datos   => 16 )
+        port map (
             reloj         => reloj,
             pos_x         => pos_x,
             pos_y         => (others => '0'),
