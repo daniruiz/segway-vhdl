@@ -5,21 +5,22 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity controlador is
-    PORT ( reloj     : in  STD_LOGIC;
-           pos_x     : in  STD_LOGIC_VECTOR(15 downto 0);
-
-           L298N_ENA : out STD_LOGIC;
-           L298N_IN1 : out STD_LOGIC;
-           L298N_IN2 : out STD_LOGIC;
-           L298N_IN3 : out STD_LOGIC;
-           L298N_IN4 : out STD_LOGIC;
-           L298N_ENB : out STD_LOGIC );
+    GENERIC  ( N_bits_datos : INTEGER := 16);
+    PORT     ( reloj     : in  STD_LOGIC;
+               pos_x     : in  STD_LOGIC_VECTOR(N_bits_datos-1 downto 0);
+    
+               L298N_ENA : out STD_LOGIC;
+               L298N_IN1 : out STD_LOGIC;
+               L298N_IN2 : out STD_LOGIC;
+               L298N_IN3 : out STD_LOGIC;
+               L298N_IN4 : out STD_LOGIC;
+               L298N_ENB : out STD_LOGIC );
 end controlador;
 
 architecture Comportamiento of controlador is
 
     component control_motores is
-        GENERIC  ( N_bits_datos   : INTEGER := 8 );
+        GENERIC  ( N_bits_datos   : INTEGER := 9);
         PORT     ( reloj          : in STD_LOGIC;
                    pos_x          : in STD_LOGIC_VECTOR (N_bits_datos-1 downto 0); -- Inclinación
                    pos_y          : in STD_LOGIC_VECTOR (N_bits_datos-1 downto 0); -- Giro
@@ -46,7 +47,7 @@ architecture Comportamiento of controlador is
 begin
 
     i_control_motores: control_motores
-        generic map ( N_bits_datos   => 16 )
+        generic map ( N_bits_datos   => N_bits_datos )
         port map (
             reloj         => reloj,
             pos_x         => pos_x,

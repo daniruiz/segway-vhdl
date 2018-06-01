@@ -5,7 +5,7 @@ use IEEE.STD_LOGIC_1164.ALL;
 use IEEE.NUMERIC_STD.ALL;
 
 entity control_motores is
-    GENERIC ( N_bits_datos : INTEGER := 8 );
+    GENERIC ( N_bits_datos : INTEGER := 9 );
     PORT    ( reloj        : in STD_LOGIC;
               pos_x        : in STD_LOGIC_VECTOR (N_bits_datos-1 downto 0); -- Inclinación
               pos_y        : in STD_LOGIC_VECTOR (N_bits_datos-1 downto 0); -- Giro
@@ -47,11 +47,11 @@ begin
                 velocidad_absoluta <= 255;
             end if;
             
-            L298N_IN1 <= pos_x(15);
-            L298N_IN2 <= NOT pos_x(15);
+            L298N_IN1 <= pos_x(pos_x'length - 1);
+            L298N_IN2 <= NOT pos_x(pos_x'length - 1);
 
-            L298N_IN3 <= pos_x(15);
-            L298N_IN4 <= NOT pos_x(15);
+            L298N_IN3 <= pos_x(pos_x'length - 1);
+            L298N_IN4 <= NOT pos_x(pos_x'length - 1);
             
             velocidad_A <= STD_LOGIC_VECTOR(to_unsigned(velocidad_absoluta, velocidad_A'length));
             velocidad_B <= STD_LOGIC_VECTOR(to_unsigned(velocidad_absoluta, velocidad_B'length));
