@@ -47,14 +47,14 @@ entity I2CMASTER is
 		MCLK		: in	std_logic;
 		nRST		: in	std_logic;
 		SRST		: in	std_logic; 						-- synchronious reset
-		TIC		    : in	std_logic;						-- i2c rate (bit rate x3)
-		DIN		    : in	std_logic_vector(7 downto 0);	-- data to send
+		TIC		: in	std_logic;							-- i2c rate (bit rate x3)
+		DIN		: in	std_logic_vector(7 downto 0);		-- data to send
 		DOUT		: out	std_logic_vector(7 downto 0);	-- received data
-		RD		    : in	std_logic;						-- read command
-		WE		    : in	std_logic;						-- write command
+		RD		: in	std_logic;							-- read command
+		WE		: in	std_logic;							-- write command
 		NACK		: out	std_logic;						-- nack from slave
 		QUEUED		: out	std_logic;						-- operation (write or read cycle) is queued
-		DATA_VALID	: out	std_logic;				    	-- new data available on DOUT
+		DATA_VALID		: out	std_logic;					-- new data available on DOUT
 		STOP		: out	std_logic;
 		STATUS		: out	std_logic_vector(2 downto 0);	-- state machine state
 		SCL_IN		: in	std_logic;						-- i2c signals
