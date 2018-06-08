@@ -1,17 +1,16 @@
 
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
-entity PWM is
-    PORT ( reloj : in  STD_LOGIC;
-           valor : in  STD_LOGIC_VECTOR(7 DOWNTO 0);
+entity pwm is
+    port ( reloj : in  std_logic;
+           valor : in  std_logic_vector(7 downto 0);
+           pwm   : out std_logic );
+end pwm;
 
-           PWM   : out STD_LOGIC );
-end PWM;
-
-architecture Comportamiento of PWM is
+architecture comportamiento of pwm is
 
     signal contador : unsigned(7 downto 0) := (others => '0');
 
@@ -20,14 +19,14 @@ begin
     process(reloj)
     begin
         if (reloj'event and reloj='1') then
-            -- Salida a 1 durante `valor` ciclos
+            -- salida a 1 durante `valor` ciclos
             if unsigned(contador) < unsigned(valor) or unsigned(contador) = unsigned(valor)  then
-                PWM <= '1';
+                pwm <= '1';
             else
-                PWM <= '0';
+                pwm <= '0';
             end if;
 
-            -- Reiniciar/incrementar contador cada ciclo
+            -- reiniciar/incrementar contador cada ciclo
             if contador = to_unsigned(255, contador'length) then
                 contador <= (others => '0');
             else
@@ -36,4 +35,4 @@ begin
         end if;
     end process;
 
-end Comportamiento;
+end comportamiento;

@@ -1,139 +1,138 @@
 
 
 
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity i2c_mpu6050 is
-    port(
-        MCLK        : in     std_logic;
-        nRST        : in     std_logic;
-        TIC         : in     std_logic;
-        SRST        : out    std_logic;
-        DOUT        : out    std_logic_vector(7 downto 0);
-        RD          : out    std_logic;
-        WE          : out    std_logic;
-        QUEUED      : in     std_logic;
-        NACK        : in     std_logic;
-        STOP        : in     std_logic;
-        DATA_VALID  : in     std_logic;
-        DIN         : in     std_logic_vector(7 downto 0);
-        ADR         : out    std_logic_vector(3 downto 0);
-        DATA        : out    std_logic_vector(7 downto 0);
-        LOAD        : out    std_logic;
-        COMPLETED   : out    std_logic;
-        RESCAN      : in     std_logic
-    );
+    port( mclk        : in  std_logic;
+          nrst        : in  std_logic;
+          tic         : in  std_logic;
+          srst        : out std_logic;
+          dout        : out std_logic_vector(7 downto 0);
+          rd          : out std_logic;
+          we          : out std_logic;
+          queued      : in  std_logic;
+          nack        : in  std_logic;
+          stop        : in  std_logic;
+          data_valid  : in  std_logic;
+          din         : in  std_logic_vector(7 downto 0);
+          adr         : out std_logic_vector(3 downto 0);
+          data        : out std_logic_vector(7 downto 0);
+          load        : out std_logic;
+          completed   : out std_logic;
+          rescan      : in  std_logic );
 end i2c_mpu6050;
 
 architecture rtl of i2c_mpu6050 is
-    type tstate is (S_IDLE, S_PWRMGT0, S_PWRMGT1, S_READ0, S_READ1, S_STABLE );
+
+    type tstate is (s_idle, s_pwrmgt0, s_pwrmgt1, s_read0, s_read1, s_stable );
     signal state : tstate;
     signal adr_i : std_logic_vector(3 downto 0);
 
 begin
 
-    ADR <= adr_i;
+    adr <= adr_i;
 
-    OTO: process(MCLK, nRST)
+    oto: process(mclk, nrst)
     begin
-        if (nRST = '0') then
-            SRST <='0';
-            DOUT <= (others=>'0');
-            RD <= '0';
-            WE <= '0';
+        if (nrst = '0') then
+            srst <='0';
+            dout <= (others=>'0');
+            rd <= '0';
+            we <= '0';
             adr_i <= (others=>'0');
-            LOAD <= '0';
-            DATA <= (others=>'1');
-            COMPLETED <= '0';
-            state <= S_IDLE;
-        elsif (MCLK'event and MCLK = '1') then
-            if (state = S_IDLE) then
-                if (TIC = '1') then
-                    SRST <='0';
-                    DOUT <= (others=>'0');
-                    RD <= '0';
-                    WE <= '0';
+            load <= '0';
+            data <= (others=>'1');
+            completed <= '0';
+            state <= s_idle;
+        elsif (mclk'event and mclk = '1') then
+            if (state = s_idle) then
+                if (tic = '1') then
+                    srst <='0';
+                    dout <= (others=>'0');
+                    rd <= '0';
+                    we <= '0';
                     adr_i <= (others=>'0');
-                    LOAD <= '0';
-                    DATA <= (others=>'1');
-                    COMPLETED <= '0';
-                    state <= S_PWRMGT0;
+                    load <= '0';
+                    data <= (others=>'1');
+                    completed <= '0';
+                    state <= s_pwrmgt0;
                 end if;
-            elsif (state = S_PWRMGT0) then -- init power management
-                if (TIC = '1') then
-                    DOUT <= x"6B";
-                    WE <= '1';
-                    RD <= '0';
-                    if (QUEUED = '1') then
-                        DOUT <= x"00";
-                        WE <= '1';
-                        RD <= '0';
-                        state <= S_PWRMGT1;
-                    elsif (NACK = '1') then
-                        state <= S_IDLE;
+            elsif (state = s_pwrmgt0) then -- init power management
+                if (tic = '1') then
+                    dout <= x"6b";
+                    we <= '1';
+                    rd <= '0';
+                    if (queued = '1') then
+                        dout <= x"00";
+                        we <= '1';
+                        rd <= '0';
+                        state <= s_pwrmgt1;
+                    elsif (nack = '1') then
+                        state <= s_idle;
                     end if;
                 end if;
-            elsif (state = S_PWRMGT1) then
-                if (TIC = '1') then
-                    if (QUEUED = '1') then
-                        DOUT <= x"00";
-                        WE <= '0';
-                        RD <= '0';
-                        state <= S_READ0;
-                    elsif (NACK = '1') then
-                        state <= S_IDLE;
+            elsif (state = s_pwrmgt1) then
+                if (tic = '1') then
+                    if (queued = '1') then
+                        dout <= x"00";
+                        we <= '0';
+                        rd <= '0';
+                        state <= s_read0;
+                    elsif (nack = '1') then
+                        state <= s_idle;
                     end if;
                 end if;
-            elsif (state = S_READ0) then    
-                if (TIC = '1') then
-                    if (STOP = '1') then
-                        DOUT <= x"3B";            -- read 14 registers
-                        WE <= '1';
-                        RD <= '0';
-                    elsif (QUEUED = '1') then
-                        WE <= '0';
-                        RD <= '1';
+            elsif (state = s_read0) then    
+                if (tic = '1') then
+                    if (stop = '1') then
+                        dout <= x"3b";    -- read 14 registers
+                        we <= '1';
+                        rd <= '0';
+                    elsif (queued = '1') then
+                        we <= '0';
+                        rd <= '1';
                         adr_i <= (others=>'0');
-                    elsif (DATA_VALID = '1') then
-                        LOAD <= '1';
-                        DATA <= DIN;
-                        state <= S_READ1;    
-                    elsif (NACK = '1') then
-                        state <= S_IDLE;
+                    elsif (data_valid = '1') then
+                        load <= '1';
+                        data <= din;
+                        state <= s_read1;    
+                    elsif (nack = '1') then
+                        state <= s_idle;
                     end if;    
                 end if;
-            elsif (state = S_READ1) then
-                if (TIC = '1') then
-                    if (DATA_VALID = '1') then
-                        LOAD <= '1';
-                        DATA <= DIN;
-                    elsif (QUEUED = '1') then
+            elsif (state = s_read1) then
+                if (tic = '1') then
+                    if (data_valid = '1') then
+                        load <= '1';
+                        data <= din;
+                    elsif (queued = '1') then
                         adr_i <= std_logic_vector(to_unsigned( to_integer(unsigned( adr_i )) + 1, 4) );
                         if (adr_i = "1100") then  -- last one
-                            WE <= '0';
-                            RD <= '0';
+                            we <= '0';
+                            rd <= '0';
                         else
-                            WE <= '0';
-                            RD <= '1';
+                            we <= '0';
+                            rd <= '1';
                         end if;
-                    elsif (STOP = '1') then
-                        state <= S_STABLE;
+                    elsif (stop = '1') then
+                        state <= s_stable;
                     else
-                        LOAD <= '0';
+                        load <= '0';
                     end if;
                 end if;
-            elsif (state = S_STABLE) then
-                COMPLETED <= '1';
-                if (TIC = '1') then
-                    if (RESCAN = '1') then
-                        state <= S_IDLE;
+            elsif (state = s_stable) then
+                completed <= '1';
+                if (tic = '1') then
+                    if (rescan = '1') then
+                        state <= s_idle;
                     end if;
                 end if;
             end if;
         end if;
-    end process OTO;
+    end process oto;
 
 end rtl;
 

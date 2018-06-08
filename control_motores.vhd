@@ -1,62 +1,63 @@
 
 
-library IEEE;
-use IEEE.STD_LOGIC_1164.ALL;
-use IEEE.NUMERIC_STD.ALL;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity control_motores is
-    GENERIC ( N_bits_datos : INTEGER := 9 );
-    PORT    ( reloj        : in STD_LOGIC;
-              pos_x        : in STD_LOGIC_VECTOR (N_bits_datos-1 downto 0); -- Inclinación
-              pos_y        : in STD_LOGIC_VECTOR (N_bits_datos-1 downto 0); -- Giro
-              
-              velocidad_A  : out STD_LOGIC_VECTOR (7 downto 0);
-              L298N_IN1    : out STD_LOGIC; -- Sentido motor A _0
-              L298N_IN2    : out STD_LOGIC; -- Sentido motor A _1
-              L298N_IN3    : out STD_LOGIC; -- Sentido motor B _0
-              L298N_IN4    : out STD_LOGIC; -- Sentido motor B _1
-              velocidad_B  : out STD_LOGIC_VECTOR (7 downto 0) );
-
+    generic ( n_bits_datos : integer := 9 );
+    port    ( reloj        : in std_logic;
+              pos_x        : in std_logic_vector (n_bits_datos-1 downto 0); -- inclinación
+              pos_y        : in std_logic_vector (n_bits_datos-1 downto 0); -- giro
+              velocidad_a  : out std_logic_vector (7 downto 0);
+              l298n_in1    : out std_logic; -- sentido motor a _0
+              l298n_in2    : out std_logic; -- sentido motor a _1
+              l298n_in3    : out std_logic; -- sentido motor b _0
+              l298n_in4    : out std_logic; -- sentido motor b _1
+              velocidad_b  : out std_logic_vector (7 downto 0) );
 end control_motores;
 
-architecture Comportamiento of control_motores is
-    signal velocidad_absoluta  : INTEGER;
-    signal pos_X_absoluta      : INTEGER;
-    constant DEG_90            : UNSIGNED (N_bits_datos-2 downto 0) := (others => '1');
-    constant DEG               : INTEGER := to_integer(DEG_90) / 90;
+architecture comportamiento of control_motores is
+
+    signal velocidad_absoluta : integer;
+    signal pos_x_absoluta     : integer;
+    constant deg_180          : unsigned (n_bits_datos-2 downto 0) := (others => '1');
+    constant deg              : integer := to_integer(deg_180) / 180;
     
-    constant C1                : INTEGER := (20*DEG * 11 / (20*DEG)) - (20*DEG * 28 / (10*DEG));
-    constant C2                : INTEGER := (30*DEG * 28 / (10*DEG) + C1) - (30*DEG * 98 / (10*DEG));
-    constant C3                : INTEGER := (40*DEG * 98 / (10*DEG) + C2) - (40*DEG * 118 / (5*DEG));
+    constant c1               : integer := (20*deg * 11 / (20*deg)) - (20*deg * 28 / (10*deg));
+    constant c2               : integer := (30*deg * 28 / (10*deg) + c1) - (30*deg * 98 / (10*deg));
+    constant c3               : integer := (40*deg * 98 / (10*deg) + c2) - (40*deg * 118 / (5*deg));
+
 begin
     process(reloj)
     begin
+
         if (reloj'event and reloj='1') then
-            pos_X_absoluta <= to_integer(abs(signed(pos_x)));
+            pos_x_absoluta <= to_integer(abs(signed(pos_x)));
                 
-            -- Función exponencial ((255+1) ^ (1/DEG_45))^x - 1
-            if    (pos_X_absoluta < (20*DEG)) then
-                velocidad_absoluta <= pos_X_absoluta * 11 / (20*DEG);
-            elsif (pos_X_absoluta = (20*DEG) or ((20*DEG) < pos_X_absoluta and pos_X_absoluta < (30*DEG))) then
-                velocidad_absoluta <= pos_X_absoluta * 28 / (10*DEG) + C1;
-            elsif (pos_X_absoluta = (30*DEG) or ((30*DEG) < pos_X_absoluta and pos_X_absoluta < (40*DEG))) then
-                velocidad_absoluta <= pos_X_absoluta * 98 / (10*DEG) + C2;
-            elsif (pos_X_absoluta = (40*DEG) or ((40*DEG) < pos_X_absoluta and pos_X_absoluta < (45*DEG))) then
-                velocidad_absoluta <= pos_X_absoluta * 118 / (5*DEG) + C3;
-            elsif (pos_X_absoluta = 45*DEG or 45*DEG < pos_X_absoluta) then
+            -- función exponencial ((255+1) ^ (1/deg_45))^x - 1
+            if    (pos_x_absoluta < (20*deg)) then
+                velocidad_absoluta <= pos_x_absoluta * 11 / (20*deg);
+            elsif (pos_x_absoluta = (20*deg) or ((20*deg) < pos_x_absoluta and pos_x_absoluta < (30*deg))) then
+                velocidad_absoluta <= pos_x_absoluta * 28 / (10*deg) + c1;
+            elsif (pos_x_absoluta = (30*deg) or ((30*deg) < pos_x_absoluta and pos_x_absoluta < (40*deg))) then
+                velocidad_absoluta <= pos_x_absoluta * 98 / (10*deg) + c2;
+            elsif (pos_x_absoluta = (40*deg) or ((40*deg) < pos_x_absoluta and pos_x_absoluta < (45*deg))) then
+                velocidad_absoluta <= pos_x_absoluta * 118 / (5*deg) + c3;
+            elsif (pos_x_absoluta = 45*deg or 45*deg < pos_x_absoluta) then
                 velocidad_absoluta <= 255;
             end if;
             
-            L298N_IN1 <= pos_x(pos_x'length - 1);
-            L298N_IN2 <= NOT pos_x(pos_x'length - 1);
+            l298n_in1 <= pos_x(pos_x'length - 1);
+            l298n_in2 <= not pos_x(pos_x'length - 1);
 
-            L298N_IN3 <= pos_x(pos_x'length - 1);
-            L298N_IN4 <= NOT pos_x(pos_x'length - 1);
+            l298n_in3 <= pos_x(pos_x'length - 1);
+            l298n_in4 <= not pos_x(pos_x'length - 1);
             
-            velocidad_A <= STD_LOGIC_VECTOR(to_unsigned(velocidad_absoluta, velocidad_A'length));
-            velocidad_B <= STD_LOGIC_VECTOR(to_unsigned(velocidad_absoluta, velocidad_B'length));
+            velocidad_a <= std_logic_vector(to_unsigned(velocidad_absoluta, velocidad_a'length));
+            velocidad_b <= std_logic_vector(to_unsigned(velocidad_absoluta, velocidad_b'length));
 
         end if;
     end process;
 
-end Comportamiento;
+end comportamiento;

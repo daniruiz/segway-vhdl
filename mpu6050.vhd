@@ -1,164 +1,175 @@
 
 
 
-library IEEE;
-use IEEE.std_logic_1164.all;
-use IEEE.numeric_std.all;
+library ieee;
+use ieee.std_logic_1164.all;
+use ieee.numeric_std.all;
 
 entity mpu6050 is
-    port(
-        reloj : in	  std_logic;
-        SDA   : inout std_logic;
-        SCL   : inout std_logic;
-
-        XREG  : out   std_logic_vector(7 downto 0);
-        YREG  : out   std_logic_vector(7 downto 0);
-        ZREG  : out   std_logic_vector(7 downto 0)
-    );
+    port ( reloj   : in    std_logic;
+           sda     : inout std_logic;
+           scl     : inout std_logic;
+           click   : in    std_logic;
+           y_gyro  : out   std_logic_vector(15 downto 0);
+           x_gyro  : out   std_logic_vector(15 downto 0);
+           z_gyro  : out   std_logic_vector(15 downto 0);
+           y_accel : out   std_logic_vector(15 downto 0);
+           x_accel : out   std_logic_vector(15 downto 0);
+           z_accel : out   std_logic_vector(15 downto 0) );
 end mpu6050;
 
-architecture Comportamiento of mpu6050 is
+architecture comportamiento of mpu6050 is
 
     component i2c_mpu6050
         port(
-            MCLK       : in	 std_logic;
-            nRST       : in	 std_logic;
-            TIC        : in	 std_logic;
-            SRST       : out std_logic;
-            DOUT       : out std_logic_vector(7 downto 0);
-            RD         : out std_logic;
-            WE         : out std_logic;
-            QUEUED     : in	 std_logic;
-            NACK       : in	 std_logic;
-            STOP       : in	 std_logic;
-            DATA_VALID : in  std_logic;
-            DIN        : in	 std_logic_vector(7 downto 0);
-            ADR        : out std_logic_vector(3 downto 0);
-            DATA       : out std_logic_vector(7 downto 0);
-            LOAD       : out std_logic;
-            COMPLETED  : out std_logic;
-            RESCAN     : in  std_logic
+            mclk       : in  std_logic;
+            nrst       : in  std_logic;
+            tic        : in  std_logic;
+            srst       : out std_logic;
+            dout       : out std_logic_vector(7 downto 0);
+            rd         : out std_logic;
+            we         : out std_logic;
+            queued     : in  std_logic;
+            nack       : in  std_logic;
+            stop       : in  std_logic;
+            data_valid : in  std_logic;
+            din        : in  std_logic_vector(7 downto 0);
+            adr        : out std_logic_vector(3 downto 0);
+            data       : out std_logic_vector(7 downto 0);
+            load       : out std_logic;
+            completed  : out std_logic;
+            rescan     : in  std_logic
         );
     end component;
     
-    component I2CMASTER
+    component i2cmaster
         generic(
-            DEVICE     : std_logic_vector(7 downto 0)
+            device     : std_logic_vector(7 downto 0)
         );
         port(
-            MCLK       : in  std_logic;
-            nRST       : in  std_logic;
-            SRST       : in  std_logic;
-            TIC        : in  std_logic;
-            DIN        : in  std_logic_vector(7 downto 0);
-            DOUT       : out std_logic_vector(7 downto 0);
-            RD         : in  std_logic;
-            WE         : in  std_logic;
-            NACK       : out std_logic;
-            QUEUED     : out std_logic;
-            DATA_VALID : out std_logic;
-            STATUS     : out std_logic_vector(2 downto 0);
-            STOP       : out std_logic;
-            SCL_IN     : in  std_logic;
-            SCL_OUT    : out std_logic;
-            SDA_IN     : in  std_logic;
-            SDA_OUT    : out std_logic
+            mclk       : in  std_logic;
+            nrst       : in  std_logic;
+            srst       : in  std_logic;
+            tic        : in  std_logic;
+            din        : in  std_logic_vector(7 downto 0);
+            dout       : out std_logic_vector(7 downto 0);
+            rd         : in  std_logic;
+            we         : in  std_logic;
+            nack       : out std_logic;
+            queued     : out std_logic;
+            data_valid : out std_logic;
+            status     : out std_logic_vector(2 downto 0);
+            stop       : out std_logic;
+            scl_in     : in  std_logic;
+            scl_out    : out std_logic;
+            sda_in     : in  std_logic;
+            sda_out    : out std_logic
         );
     end component;
 
 
-    signal TIC         : std_logic;
-    signal SRST        : std_logic;
-    signal DOUT        : std_logic_vector(7 downto 0);
-    signal RD          : std_logic;
-    signal WE          : std_logic;
-    signal QUEUED      : std_logic;
-    signal NACK        : std_logic;
-    signal STOP        : std_logic;
-    signal DATA_VALID  : std_logic;
-    signal DIN         : std_logic_vector(7 downto 0);
-    signal ADR         : std_logic_vector(3 downto 0);
-    signal DATA        : std_logic_vector(7 downto 0);
-    signal LOAD        : std_logic;
-    signal COMPLETED   : std_logic;
-    signal RESCAN      : std_logic;
-    signal STATUS      : std_logic_vector(2 downto 0);
-    signal SCL_IN      : std_logic;
-    signal SCL_OUT     : std_logic;
-    signal SDA_IN      : std_logic;
-    signal SDA_OUT     : std_logic;
+    signal tic         : std_logic;
+    signal srst        : std_logic;
+    signal dout        : std_logic_vector(7 downto 0);
+    signal rd          : std_logic;
+    signal we          : std_logic;
+    signal queued      : std_logic;
+    signal nack        : std_logic;
+    signal stop        : std_logic;
+    signal data_valid  : std_logic;
+    signal din         : std_logic_vector(7 downto 0);
+    signal adr         : std_logic_vector(3 downto 0);
+    signal data        : std_logic_vector(7 downto 0);
+    signal load        : std_logic;
+    signal completed   : std_logic;
+    signal rescan      : std_logic;
+    signal status      : std_logic_vector(2 downto 0);
+    signal scl_in      : std_logic;
+    signal scl_out     : std_logic;
+    signal sda_in      : std_logic;
+    signal sda_out     : std_logic;
 
     signal counter     : std_logic_vector(7 downto 0);
+    
+    signal temp_data   : std_logic_vector(7 downto 0);
 
 begin
 
-    I_i2c_mpu6050_0 : i2c_mpu6050
+    i_i2c_mpu6050_0 : i2c_mpu6050
         port map (
-            MCLK       => reloj,
-            nRST       => '1',
-            TIC        => TIC,
-            SRST       => SRST,
-            DOUT       => DIN,
-            RD         => RD,
-            WE         => WE,
-            QUEUED     => QUEUED,
-            NACK       => NACK,
-            STOP       => STOP,
-            DATA_VALID => DATA_VALID,
-            DIN        => DOUT,
-            ADR        => ADR,
-            DATA       => DATA,
-            LOAD       => LOAD,
-            COMPLETED  => COMPLETED,
-            RESCAN     => RESCAN
-        );
+            mclk       => reloj,
+            nrst       => '1',
+            tic        => tic,
+            srst       => srst,
+            dout       => din,
+            rd         => rd,
+            we         => we,
+            queued     => queued,
+            nack       => nack,
+            stop       => stop,
+            data_valid => data_valid,
+            din        => dout,
+            adr        => adr,
+            data       => data,
+            load       => load,
+            completed  => completed,
+            rescan     => rescan );
 
-    I_I2CMASTER_0 : I2CMASTER
-        generic map (
-            DEVICE     => x"68"
-        )
+    i_i2cmaster_0 : i2cmaster
+        generic map ( device     => x"68" )
         port map (
-            MCLK       => reloj,
-            nRST       => '1',
-            SRST       => SRST,
-            TIC        => TIC,
-            DIN        => DIN,
-            DOUT       => DOUT,
-            RD         => RD,
-            WE         => WE,
-            NACK       => NACK,
-            QUEUED     => QUEUED,
-            DATA_VALID => DATA_VALID,
-            STOP       => STOP,
-            STATUS     => STATUS,
-            SCL_IN     => SCL_IN,
-            SCL_OUT    => SCL_OUT,
-            SDA_IN     => SDA_IN,
-            SDA_OUT    => SDA_OUT
-        );
+            mclk       => reloj,
+            nrst       => '1',
+            srst       => srst,
+            tic        => tic,
+            din        => din,
+            dout       => dout,
+            rd         => rd,
+            we         => we,
+            nack       => nack,
+            queued     => queued,
+            data_valid => data_valid,
+            stop       => stop,
+            status     => status,
+            scl_in     => scl_in,
+            scl_out    => scl_out,
+            sda_in     => sda_in,
+            sda_out    => sda_out );
 
-    TIC <= counter(7) and counter(5);
+    tic <= counter(7) and counter(5);
 
     process(reloj)
     begin
        if (reloj'event and reloj='1') then
-            if (TIC = '1') then
+            if (tic = '1') then
                 counter <= (others=>'0');
                 
-                if ( COMPLETED = '1' ) then
-                    RESCAN <= '1';
+                if ( completed = '1' ) then
+                    rescan <= '1';
                 else
-                    RESCAN <= '0';
+                    rescan <= '0';
                 end if;
                 
-            if (LOAD = '1') then
-                    if (ADR = x"0") then
-                        XREG <= DATA;
-                    elsif (ADR = x"2") then
-                        YREG <= DATA;
-                    elsif (ADR = x"4") then
-                        ZREG <= DATA;
-                    end if;
+                if (load = '1') then
+                    case adr is
+                        when x"0" => temp_data <= data;
+                        when x"1" => y_gyro <= temp_data & data;
+                        when x"2" => temp_data <= data;
+                        when x"3" => x_gyro <= temp_data & data;
+                        when x"4" => temp_data <= data;
+                        when x"5" => z_gyro <= temp_data & data;
+--                        when x"6" => 
+--                        when x"7" => 
+                        when x"8" => temp_data <= data;
+                        when x"9" => y_accel <= temp_data & data;
+                        when x"a" => temp_data <= data;
+                        when x"b" => x_accel <= temp_data & data;
+                        when x"c" => temp_data <= data;
+                        when x"d" => z_accel <= temp_data & data;
+--                        when x"e" => 
+--                        when x"f" => 
+                        when others => null;
+                    end case;
                 end if;
             else
                 counter <= std_logic_vector(to_unsigned(to_integer(unsigned( counter )) + 1, 8));
@@ -166,10 +177,11 @@ begin
         end if;
     end process;
 
-    SCL <= 'Z' when SCL_OUT='1' else '0';
-    SCL_IN <= to_UX01(SCL);
-    SDA <= 'Z' when SDA_OUT='1' else '0';
-    SDA_IN <= to_UX01(SDA);
 
-end Comportamiento;
+    scl <= 'z' when scl_out='1' else '0';
+    scl_in <= to_ux01(scl);
+    sda <= 'z' when sda_out='1' else '0';
+    sda_in <= to_ux01(sda);
+
+end comportamiento;
 
