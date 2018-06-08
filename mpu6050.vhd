@@ -178,9 +178,9 @@ begin
     end process;
 
 
-    scl <= 'z' when scl_out='1' else '0';
+    scl <= 'Z' when scl_out='1' else '0';
     scl_in <= to_ux01(scl);
-    sda <= 'z' when sda_out='1' else '0';
+    sda <= 'Z' when sda_out='1' else '0';
     sda_in <= to_ux01(sda);
 
 end comportamiento;
