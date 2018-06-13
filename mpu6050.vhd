@@ -9,13 +9,12 @@ entity mpu6050 is
     port ( reloj   : in    std_logic;
            sda     : inout std_logic;
            scl     : inout std_logic;
-           click   : in    std_logic;
-           y_gyro  : out   std_logic_vector(15 downto 0);
-           x_gyro  : out   std_logic_vector(15 downto 0);
-           z_gyro  : out   std_logic_vector(15 downto 0);
-           y_accel : out   std_logic_vector(15 downto 0);
-           x_accel : out   std_logic_vector(15 downto 0);
-           z_accel : out   std_logic_vector(15 downto 0) );
+           y_gyro  : out   std_logic_vector(7 downto 0);
+           x_gyro  : out   std_logic_vector(7 downto 0);
+           z_gyro  : out   std_logic_vector(7 downto 0);
+           y_accel : out   std_logic_vector(7 downto 0);
+           x_accel : out   std_logic_vector(7 downto 0);
+           z_accel : out   std_logic_vector(7 downto 0) );
 end mpu6050;
 
 architecture comportamiento of mpu6050 is
@@ -152,22 +151,13 @@ begin
                 
                 if (load = '1') then
                     case adr is
-                        when x"0" => temp_data <= data;
-                        when x"1" => y_gyro <= temp_data & data;
-                        when x"2" => temp_data <= data;
-                        when x"3" => x_gyro <= temp_data & data;
-                        when x"4" => temp_data <= data;
-                        when x"5" => z_gyro <= temp_data & data;
---                        when x"6" => 
---                        when x"7" => 
-                        when x"8" => temp_data <= data;
-                        when x"9" => y_accel <= temp_data & data;
-                        when x"a" => temp_data <= data;
-                        when x"b" => x_accel <= temp_data & data;
-                        when x"c" => temp_data <= data;
-                        when x"d" => z_accel <= temp_data & data;
---                        when x"e" => 
---                        when x"f" => 
+                        when x"0" => y_gyro <= data;
+                        when x"2" => x_gyro <= data;
+                        when x"4" => z_gyro <= data;
+
+                        when x"8" => y_accel <= data;
+                        when x"a" => x_accel <= data;
+                        when x"c" => z_accel <= data;
                         when others => null;
                     end case;
                 end if;
