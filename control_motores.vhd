@@ -5,7 +5,7 @@ use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
 
 entity control_motores is
-    generic ( n_bits_datos : integer := 9 );
+    generic ( n_bits_datos : integer := 8 );
     port    ( reloj        : in std_logic;
               x_gyro       : in std_logic_vector (n_bits_datos-1 downto 0); -- inclinación
               y_gyro       : in std_logic_vector (n_bits_datos-1 downto 0); -- giro
@@ -29,42 +29,27 @@ end control_motores;
 
 architecture comportamiento of control_motores is
 
-    signal velocidad_absoluta : integer;
-    signal pos_x_absoluta     : integer;
-    constant deg_180          : unsigned (n_bits_datos-2 downto 0) := (others => '1');
-    constant deg              : integer := to_integer(deg_180) / 180;
-    
-    constant c1               : integer := (20*deg * 11 / (20*deg)) - (20*deg * 28 / (10*deg));
-    constant c2               : integer := (30*deg * 28 / (10*deg) + c1) - (30*deg * 98 / (10*deg));
-    constant c3               : integer := (40*deg * 98 / (10*deg) + c2) - (40*deg * 118 / (5*deg));
-    signal contador           : integer := 0;
-    signal lastError          : integer := 0;
+    constant timeChange        : integer := 1; -- 0.1 ns
+    constant vel_offset        : integer := 70;
+
+    signal velocidad           : integer;
+    signal velocidad_a_integer : integer;
+    signal velocidad_b_integer : integer;
+    signal x_gyro_integer      : integer;
+    signal y_gyro_integer      : integer;
+   
+    signal contador            : integer := 0;
+    signal error               : integer := 0;
+    signal dErr                : integer := 0;
+    signal sum_error           : integer := 0;
+    signal ultimo_error        : integer := 0;
 
 
-    signal KpLastState        : std_logic := '0';
-    signal KdLastState        : std_logic := '0';
-    signal KiLastState        : std_logic := '0';
+    signal Kp_ultimo_estado    : std_logic := '0';
+    signal Kd_ultimo_estado    : std_logic := '0';
+    signal Ki_ultimo_estado    : std_logic := '0';
      
         
-    function PID( angleFiltered, lastError, kp,kd,ki : integer) return integer is
-    
-
-        
-        constant timeChange   : integer := 1;
-        variable error        : integer := 0;
-        variable errorSum     : integer := 0;
-        variable dErr         : integer := 0;
-        
-    begin
-        
-        error := angleFiltered;
-        errorSum := errorSum + error*timeChange;
-        dErr := (error - lastError)/timeChange;
-        
-        return Kp * error + Ki * errorSum + Kd * dErr;
-    
-    end PID;
-
 begin
     process(reloj)
     begin
@@ -73,40 +58,73 @@ begin
             contador <= contador + 1;
             
             -- ........................
-            if(kpUp = '1' and KpLastState = '0') then
+            if(kpUp = '1' and Kp_ultimo_estado = '0') then
                 KP <= KP + 10;
             end if;
-            KpLastState <= kpUp;
-            if(kdUp = '1' and KdLastState = '0') then
-                Kd <= Kd + 1;
+            Kp_ultimo_estado <= kpUp;
+            if(kdUp = '1' and Kd_ultimo_estado = '0') then
+                Kd <= Kd + 10;
             end if;
-            KdLastState <= kdUp;
-            if(kiUp = '1' and KiLastState = '0') then
+            Kd_ultimo_estado <= kdUp;
+            if(kiUp = '1' and Ki_ultimo_estado = '0') then
                 Ki <= Ki + 1;
             end if;
-            KiLastState <= kiUp;
+            Ki_ultimo_estado <= kiUp;
             
-            if (contador = 100000) then
+            if (contador = 10000) then
                 contador <= 0;
-                pos_x_absoluta <= to_integer(abs(signed(x_gyro)));
-                    
-                    
                 
-                    l298n_in1 <= x_gyro(x_gyro'length - 1);
-                    l298n_in2 <= not x_gyro(x_gyro'length - 1);
-        
-                    l298n_in3 <= x_gyro(x_gyro'length - 1);
-                    l298n_in4 <= not x_gyro(x_gyro'length - 1);
-                    
-                    velocidad_absoluta <= PID(pos_x_absoluta, lastError,kp,kd,ki);
-                    
-                    velocidad_a <= std_logic_vector(to_unsigned(velocidad_absoluta, velocidad_a'length));
-                    velocidad_b <= std_logic_vector(to_unsigned(velocidad_absoluta, velocidad_b'length));
-                    
-                    lastError <= pos_x_absoluta;
-        
+                x_gyro_integer <= to_integer(signed( x_gyro ));
+                y_gyro_integer <= 0; -- <= to_integer(signed( y_gyro )) * 8;
+                
+                -- '''''''''''''''''''
+                -- PID
+                error <= x_gyro_integer;                      -- Proporción
+                sum_error <= sum_error + error * timeChange;  -- Integración
+                dErr <= (error - ultimo_error) / timeChange;  -- Derivación
+                velocidad <= Kp * error + Ki * sum_error + Kd * dErr;
+                ultimo_error <= error;
+                
+
+                velocidad_a_integer <= velocidad - y_gyro_integer;
+                velocidad_b_integer <= velocidad + y_gyro_integer;
+                
+                if velocidad_a_integer > 255 then
+                    velocidad_a_integer <= 255;
                 end if;
+                if velocidad_b_integer > 255 then
+                    velocidad_b_integer <= 255;
+                end if;
+                if velocidad_a_integer < -255 then
+                    velocidad_a_integer <= -255;
+                end if;
+                if velocidad_b_integer < -255 then
+                    velocidad_b_integer <= -255;
+                end if;
+                
+                velocidad_a <= std_logic_vector(to_unsigned(abs(velocidad_a_integer), velocidad_a'length));
+                velocidad_b <= std_logic_vector(to_unsigned(abs(velocidad_b_integer), velocidad_b'length));
+                
+          
+                l298n_in1 <= '0';
+                l298n_in2 <= '1';
+                l298n_in3 <= '0';
+                l298n_in4 <= '1';
+                                
+                if velocidad_a_integer < 0 then
+                    l298n_in1 <= '1';
+                    l298n_in2 <= '0';
+               end if;
+               
+               if velocidad_b_integer < 0 then
+                   l298n_in3 <= '1';
+                   l298n_in4 <= '0';
+              end if;
+
+
             end if;
+        end if;
     end process;
+   
 
 end comportamiento;
