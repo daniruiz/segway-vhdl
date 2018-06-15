@@ -29,9 +29,10 @@ end control_motores;
 
 architecture comportamiento of control_motores is
 
+    constant decimas           : integer   := 1000;
     constant timeChange        : integer   := 1; -- 0.1 ns
     constant vel_offset        : integer   := 70;
-    constant gyro_gain         : integer   := 185; -- (131 * 127 * 2 / 180);
+    constant gyro_gain         : integer   := 91; -- (65 * 127 * 2 / 180);
     constant A                 : integer   := 987;
     constant dt                : integer   := 10;
  
@@ -84,20 +85,21 @@ begin
                 contador := 0;
                 
                 x_gyro_integer  := to_integer(signed( x_gyro ));
-                y_gyro_integer  := to_integer(signed( y_gyro )) * 8;
+                y_gyro_integer  := 0; -- to_integer(signed( y_gyro )) * 4;
                 y_accel_integer := to_integer(signed( y_accel ));
                 z_accel_integer := to_integer(signed( z_accel ));
                 
-                -- '''''''''''''''''''
+                -- ``````````````````
                 -- Filtrado
                 angle_raw          := calc_angle_raw(y_accel_integer, z_accel_integer); -- atan ya está x1000;
-                omega              := x_gyro_integer * 1000 / gyro_gain;
-                angle_filtered     := (A * (angle_filtered * 1000 + omega * dt) + (1000 - A) * angle_raw * 1000) / (1000 * 1000); -- 1000 de A; 
-                angle_filtered_fin := angle_filtered / 1000;                       
-                -- velocidad <= angle_filtered_fin;
-                velocidad := angle_raw * 2 / 1000;
+                omega              := x_gyro_integer * decimas / gyro_gain;
+--                angle_filtered     := (A * (angle_filtered * decimas + omega * dt) + (decimas - A) * angle_raw * decimas) / (decimas * decimas); -- decimas de A; decimas de dt:=10/1000
+                angle_filtered := (A * x_gyro_integer * decimas + (decimas - A) * angle_raw) / decimas;
+                angle_filtered_fin := angle_filtered / decimas; -- Convertir a angulo sin decimales;
                 
-                -- '''''''''''''''''''
+                velocidad          := angle_filtered_fin * 4;
+                
+                -- ``````````````````
                 -- PID
 --                error <= angle_filtered_fin;                  -- Proporción
 --                sum_error <= sum_error + error * timeChange;  -- Integración

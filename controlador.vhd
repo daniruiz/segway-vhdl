@@ -28,7 +28,7 @@ end controlador;
 architecture comportamiento of controlador is
 
     component control_motores is
-        generic ( n_bits_datos : integer := 16 );
+        generic ( n_bits_datos : integer := 8 );
         port    ( reloj        : in std_logic;
                   x_gyro       : in std_logic_vector (n_bits_datos-1 downto 0); -- inclinación
                   y_gyro       : in std_logic_vector (n_bits_datos-1 downto 0); -- giro
@@ -119,16 +119,18 @@ begin
             Kd          => Kd,
             Ki          => Ki );
 
-    i_pwm_a: pwm
+    i_pwm_a: pwm -- PWM para motor A
         port map (
             reloj       => reloj,
             valor       => velocidad_a,
+            -- Salida pulsos PWM a puente H / motor A
             pwm         => l298n_ena );
 
-    i_pwm_b: pwm
+    i_pwm_b: pwm -- PWM para motor B
         port map (
             reloj       => reloj,
             valor       => velocidad_b,
+             -- Salida pulsos PWM a puente H / motor B
             pwm         => l298n_enb );
             
             
