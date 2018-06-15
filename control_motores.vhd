@@ -29,17 +29,17 @@ end control_motores;
 
 architecture comportamiento of control_motores is
 
-    constant decimas           : integer   := 1000;
+    constant decimales         : integer   := 1000;
     constant timeChange        : integer   := 1; -- 0.1 ns
     constant vel_offset        : integer   := 70;
     constant gyro_gain         : integer   := 91; -- (65 * 127 * 2 / 180);
     constant A                 : integer   := 987;
-    constant dt                : integer   := 10;
+    constant dt                : integer   := 10; -- 10 ms => 10/1000 s
  
     signal velocidad_a_integer : integer;
     signal velocidad_b_integer : integer;
 
-    function calc_angle_raw (y_accel : integer; z_accel : integer) return integer is
+    function calc_angulo_crudo (y_accel : integer; z_accel : integer) return integer is
         type t_valores is array(0 to 10000) of integer;
         -- 180_deg := 127*2;
         -- atan( y_accel / z_accel ) / pi * 180_deg;   *1000 para 3 decimales
@@ -57,7 +57,7 @@ architecture comportamiento of control_motores is
             valor := -valor;
         end if;
         return valor;
-    end calc_angle_raw;
+    end calc_angulo_crudo;
         
 begin
 
@@ -66,11 +66,11 @@ begin
         variable y_gyro_integer      : integer;
         variable y_accel_integer     : integer;
         variable z_accel_integer     : integer;
-        variable angle_raw           : integer;
-        variable omega               : integer;
-        variable angle_filtered      : integer := 0;
-        variable angle_filtered_fin  : integer;
+        variable angulo_crudo        : integer;
+        variable omega_dt            : integer;
+        variable angulo_filtrado     : integer := 0;
         variable velocidad           : integer;
+        variable velocidad_fin       : integer;
         variable velocidad_a_temp    : integer;
         variable velocidad_b_temp    : integer;
         variable contador            : integer := 0;
@@ -88,27 +88,25 @@ begin
                 y_gyro_integer  := 0; -- to_integer(signed( y_gyro )) * 4;
                 y_accel_integer := to_integer(signed( y_accel ));
                 z_accel_integer := to_integer(signed( z_accel ));
-                
+
                 -- ``````````````````
                 -- Filtrado
-                angle_raw          := calc_angle_raw(y_accel_integer, z_accel_integer); -- atan ya está x1000;
-                omega              := x_gyro_integer * decimas / gyro_gain;
---                angle_filtered     := (A * (angle_filtered * decimas + omega * dt) + (decimas - A) * angle_raw * decimas) / (decimas * decimas); -- decimas de A; decimas de dt:=10/1000
-                angle_filtered := (A * x_gyro_integer * decimas + (decimas - A) * angle_raw) / decimas;
-                angle_filtered_fin := angle_filtered / decimas; -- Convertir a angulo sin decimales;
-                
-                velocidad          := angle_filtered_fin * 4;
-                
+                angulo_crudo    := calc_angulo_crudo(y_accel_integer, z_accel_integer); -- atan ya está x1000;
+                omega_dt        := (x_gyro_integer * decimales * dt / decimales) / gyro_gain; -- x_gyro / gyro_gain * dt
+                angulo_filtrado := (A * (angulo_filtrado + omega_dt) + (decimales - A) * angulo_crudo) / decimales;
+
                 -- ``````````````````
                 -- PID
---                error <= angle_filtered_fin;                  -- Proporción
---                sum_error <= sum_error + error * timeChange;  -- Integración
---                dErr <= (error - ultimo_error) / timeChange;  -- Derivación
---                velocidad <= Kp * error + Ki * sum_error + Kd * dErr;
---                ultimo_error <= error;
+                error           := angulo_filtrado;                            -- Proporción
+                sum_error       := sum_error + error * (dt / decimales);       -- Integración
+                dErr            := (error - ultimo_error) / (dt / decimales);  -- Derivación
+                velocidad       := (Kp * error + Ki * sum_error + Kd * dErr) / 100;
+                ultimo_error    := error;
                 
-                velocidad_a_temp := velocidad - y_gyro_integer;
-                velocidad_b_temp := velocidad + y_gyro_integer;
+                velocidad_fin := velocidad / decimales;
+                
+                velocidad_a_temp := velocidad_fin - y_gyro_integer;
+                velocidad_b_temp := velocidad_fin + y_gyro_integer;
                 
                 -- Evitar que la velocidad sobrepase el límite para PWM [0 - 255] con signo;
                 if velocidad_a_temp > 255 then
@@ -136,11 +134,11 @@ begin
     begin
         if (reloj'event and reloj='1') then
             if(kpUp = '1' and Kp_ultimo_estado = '0') then
-                KP <= KP + 1;
+                KP <= KP + 10;
             end if;
             Kp_ultimo_estado := kpUp;
             if(kdUp = '1' and Kd_ultimo_estado = '0') then
-                Kd <= Kd + 1;
+                Kd <= Kd + 10;
             end if;
             Kd_ultimo_estado := kdUp;
             if(kiUp = '1' and Ki_ultimo_estado = '0') then
