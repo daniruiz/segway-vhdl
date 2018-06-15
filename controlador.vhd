@@ -73,6 +73,7 @@ architecture comportamiento of controlador is
 
     signal velocidad_a    : std_logic_vector (7 downto 0);
     signal velocidad_b    : std_logic_vector (7 downto 0);
+    -- Variables leídas del sensor
     signal y_gyro         : std_logic_vector (n_bits_datos - 1 downto 0);
     signal x_gyro         : std_logic_vector (n_bits_datos - 1 downto 0);
     signal z_gyro         : std_logic_vector (n_bits_datos - 1 downto 0);
@@ -80,6 +81,7 @@ architecture comportamiento of controlador is
     signal x_accel        : std_logic_vector (n_bits_datos - 1 downto 0);
     signal z_accel        : std_logic_vector (n_bits_datos - 1 downto 0);
     
+    -- Valores preasignados para PID
     signal Kp             : integer := 0;
     signal Kd             : integer := 0;
     signal Ki             : integer := 0;
@@ -133,21 +135,20 @@ begin
              -- Salida pulsos PWM a puente H / motor B
             pwm         => l298n_enb );
             
-            
+    
+    
+    -- Muestra los valores de las k's del PID en los leds en función de switch0 y switch1
     process(reloj)
     begin
-    
         if (reloj'event and reloj='1') then
-        
             if(switch0  = '0' and  switch1 = '0' ) then
-                salida <= std_logic_vector(to_unsigned(kp,salida'length)); -- 0 0 KP
+                salida <= std_logic_vector(to_unsigned(kp,salida'length)); -- 0 0 KP -- proporcional
             elsif(switch0  = '0' and  switch1 = '1' ) then
-               salida <= std_logic_vector(to_unsigned(kd,salida'length));  -- 0 1 Kd
+               salida <= std_logic_vector(to_unsigned(kd,salida'length));  -- 0 1 Kd -- derivativo
             elsif(switch0  = '1' and  switch1 = '0' ) then
-                salida <= std_logic_vector(to_unsigned(ki,salida'length)); -- 1 0 Ki
+                salida <= std_logic_vector(to_unsigned(ki,salida'length)); -- 1 0 Ki -- integral
             end if;
         end if;
-       
     end process;
 
 end comportamiento;

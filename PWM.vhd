@@ -26,7 +26,7 @@ begin
                 pwm <= '0';
             end if;
 
-            -- reiniciar/incrementar contador cada ciclo
+            -- reiniciar/incrementar contador cada 255 ciclos
             if contador = to_unsigned(255, contador'length) then
                 contador <= (others => '0');
             else

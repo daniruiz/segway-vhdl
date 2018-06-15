@@ -61,6 +61,10 @@ architecture comportamiento of control_motores is
         
 begin
 
+    Kp <= 550;
+    Kd <= 0;
+    Ki <= 0;
+
     process(reloj)
         variable x_gyro_integer      : integer;
         variable y_gyro_integer      : integer;
@@ -85,7 +89,7 @@ begin
                 contador := 0;
                 
                 x_gyro_integer  := to_integer(signed( x_gyro ));
-                y_gyro_integer  := 0; -- to_integer(signed( y_gyro )) * 4;
+                y_gyro_integer  := to_integer(signed( y_gyro )) * 4;
                 y_accel_integer := to_integer(signed( y_accel ));
                 z_accel_integer := to_integer(signed( z_accel ));
 

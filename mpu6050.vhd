@@ -151,6 +151,7 @@ begin
                 
                 if (load = '1') then
                     case adr is
+                        -- Lectura de las variables del sensor;
                         when x"0" => y_gyro <= data;
                         when x"2" => x_gyro <= data;
                         when x"4" => z_gyro <= data;
