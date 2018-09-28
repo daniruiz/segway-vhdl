@@ -61,10 +61,6 @@ architecture comportamiento of control_motores is
         
 begin
 
-    Kp <= 550;
-    Kd <= 0;
-    Ki <= 0;
-
     process(reloj)
         variable x_gyro_integer      : integer;
         variable y_gyro_integer      : integer;
